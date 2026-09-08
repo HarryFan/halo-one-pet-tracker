@@ -49,6 +49,9 @@ const check = (name, pass, detail = '') => {
 const browser = await chromium.launch({ headless: !headed });
 const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
 
+const assetHits = [];
+page.on('response', (r) => { if (/\/assets\/.+\.png$/.test(r.url())) assetHits.push([r.url().split('/').pop(), r.status()]); });
+
 const consoleErrors = [];
 page.on('console', (m) => { if (m.type() === 'error') consoleErrors.push(m.text()); });
 page.on('pageerror', (e) => consoleErrors.push('pageerror: ' + e.message));
@@ -74,6 +77,10 @@ async function canvasVariance(sel) {
 }
 const worldBytes = await canvasVariance('#pixi-container canvas');
 check('地圖有畫出內容', worldBytes > 20000, `${worldBytes} bytes`);
+
+/* 1b. 狗狗大頭插畫真的載進來了（載不到會退回向量頭像，所以要驗） */
+check('柴犬大頭插畫載入成功', assetHits.some(([n, st]) => n === 'shiba-head.png' && st === 200),
+  assetHits.map(([n, st]) => `${n}:${st}`).join(', ') || '沒有請求 assets/');
 
 /* 2. 捲動推進時間 + beat 依序揭露 */
 const t0 = await page.textContent('#hud-time');
@@ -211,6 +218,8 @@ await breedBtns.nth(1).click();
 await page.waitForTimeout(400);
 await page.waitForTimeout(500);
 const breedLabel = await page.textContent('#breed-name');
+check('柯基大頭插畫載入成功', assetHits.some(([n, st]) => n === 'corgi-head.png' && st === 200),
+  assetHits.map(([n, st]) => `${n}:${st}`).join(', '));
 const breedPressed = await breedBtns.nth(1).getAttribute('aria-pressed');
 check('犬種可切換（柴犬 / 柯基）', breedCount === 2 && breedPressed === 'true', breedLabel);
 

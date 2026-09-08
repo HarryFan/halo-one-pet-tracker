@@ -1,6 +1,9 @@
 /* dog-sprite.js — 柴犬 / 柯基「頭像 pin」。
  *
- * 純 PIXI.Graphics 向量頭像：沒有圖檔、沒有網路依賴，用 file:// 直接開也能跑。
+ * 圖像有兩層來源，永遠不會開天窗：
+ *   1. assets/<breed>-head.png —— 原創生成的日系扁平大頭插畫（本專案自有版權）
+ *   2. 載入失敗時（例如用 file:// 直接開、離線、檔案被刪）自動退回下面這組
+ *      純 PIXI.Graphics 向量頭像，造型、配色、動態完全一致。
  *
  * 刻意只畫頭：地圖上的定位點本來就該是一顆頭像徽章，
  * 畫全身反而要處理走路循環、朝向與透視，尺寸一縮就糊掉。
@@ -118,6 +121,32 @@
     head.addChild(earBack, earFront, skull, face, eyes);
     rig.addChild(shadow, badge, head);
 
+    /* ---- 插畫貼圖：載到就蓋在向量頭上面，載不到就維持向量 ---- */
+    const photo = new PIXI.Container();
+    photo.zIndex = 3;
+    photo.visible = false;
+    rig.addChild(photo);
+
+    const texUrl = (D.DOG_TEXTURES || {})[B.id];
+    if (texUrl && PIXI.Assets) {
+      PIXI.Assets.load(texUrl)
+        .then((tex) => {
+          if (!tex || root.destroyed) return;
+          const sp = new PIXI.Sprite(tex);
+          sp.anchor.set(0.5);
+          // 貼圖是方形，縮到剛好填滿徽章圓
+          const d = (BADGE - 3) * 2;
+          sp.width = d;
+          sp.height = d;
+          const m = new PIXI.Graphics().circle(0, 0, BADGE - 3).fill({ color: 0xffffff });
+          photo.addChild(sp, m);
+          photo.mask = m;
+          photo.visible = true;
+          head.visible = false;          // 向量頭退居備援
+        })
+        .catch(() => { /* 維持向量頭像 */ });
+    }
+
     let collarHex = D.COPY.collarColors[0].hex;
     function drawBadge() {
       // 正圓徽章，圓心就是定位點 —— 介面層的定位環才框得準
@@ -140,6 +169,7 @@
       update(dt, speed, facing, reduced) {
         if (reduced) {
           head.y = 0; head.rotation = 0; rig.y = 0;
+          photo.y = 0; photo.rotation = 0;
           drawEyes(true);
           return;
         }
@@ -151,6 +181,10 @@
         head.rotation = Math.sin(t * 1.7) * 0.05 + facing * speed * 0.09;
         const squash = 1 + Math.sin(t * (8 + speed * 10)) * 0.02 * (0.5 + speed);
         head.scale.set(1 / squash, squash);
+        // 貼圖版跟著一起呼吸、歪頭（貼圖不能眨眼，其餘動態一致）
+        photo.y = head.y;
+        photo.rotation = head.rotation;
+        photo.scale.set(1 / squash, squash);
 
         blinkTimer -= dt;
         if (blinkTimer <= 0) { blinking = 0.14; blinkTimer = 2.2 + Math.random() * 3.2; }

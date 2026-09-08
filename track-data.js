@@ -103,6 +103,12 @@ const PALETTE = {
   tagHex:    0xf0d9a8,
 };
 
+/* 原創生成的大頭插畫（本專案自有版權；載不到就退回向量頭像） */
+const DOG_TEXTURES = {
+  shiba: 'assets/shiba-head.png',
+  corgi: 'assets/corgi-head.png',
+};
+
 /* 犬種：柴犬 / 柯基，兩套形狀參數餵給同一組骨架 */
 const BREEDS = {
   shiba: {
@@ -210,7 +216,7 @@ const COPY = {
 /* 全域命名空間：這份 demo 刻意不用打包器，直接雙擊 index.html 就能跑。 */
 window.HALO = Object.assign(window.HALO || {}, {
   CITY, HOME, PARK, clock, DAY_START, DAY_END,
-  WAYPOINTS, METERS_PER_UNIT, FENCE_EVENT, COPY, PALETTE, BREEDS,
+  WAYPOINTS, METERS_PER_UNIT, FENCE_EVENT, COPY, PALETTE, BREEDS, DOG_TEXTURES,
 });
 
 })();
