@@ -2,6 +2,10 @@
 
 **Live demo:** https://harryfan.github.io/halo-one-pet-tracker/
 
+![Hero — 06:00, the dog at home on the hand-drawn city map](docs/hero.png)
+
+![Journey — mid-scroll, geofence breached, walked track behind the pin](docs/journey.png)
+
 Scroll-driven product page for a smart pet tracker. A single PixiJS v8 `Application` draws a
 procedural hand-illustrated city; as you scroll through one day (06:00 → 22:00) a dog head-pin
 walks the real GPS track, and the geofence breach at 08:54 fires an alert that unwinds when you
